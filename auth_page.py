@@ -1,27 +1,17 @@
 import streamlit as st
 import requests
 import base64
-from streamlit_autorefresh import st_autorefresh
 from datetime import datetime
 
 # Function to generate authentication token
 def generate_auth_token(username, password):
-    # Encode the username and password
     user_pw = base64.b64encode(f'{username}:{password}'.encode('utf-8')).decode('utf-8')
-
-    # Set up the headers for the request
     auth_headers = {
         'Authorization': f'Basic {user_pw}',
         'Content-Type': 'application/json'
     }
-
-    # URL for authentication
     auth_url = 'https://us1a.app.anaplan.com/token/authenticate'
-
-    # Make the POST request
     response = requests.post(auth_url, headers=auth_headers, verify=False)
-
-    # Check the response
     if str(response.status_code).startswith('2'):
         auth_json = response.json()
         return auth_json['tokenInfo']['tokenValue']
@@ -42,15 +32,25 @@ def main():
         if token:
             st.success("Authentication successful!")
             st.write(f"Your token: {token}")
-            # Store the token and other details in Streamlit session state
             st.session_state.auth_token = token
             st.session_state.username = username
             st.session_state.password = password
             st.session_state.last_refreshed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # Auto-refresh every 15 minutes (900 seconds)
+    # JavaScript for auto-refresh
+    st.markdown(
+        """
+        <script>
+        function refreshPage() {
+            window.location.reload();
+        }
+        setInterval(refreshPage, 900000);  // Refresh every 15 minutes (900000 milliseconds)
+        </script>
+        """,
+        unsafe_allow_html=True
+    )
+
     if "auth_token" in st.session_state:
-        st_autorefresh(interval=900 * 1000, key="auth_refresh")
         token = generate_auth_token(st.session_state.username, st.session_state.password)
         if token:
             st.session_state.auth_token = token
