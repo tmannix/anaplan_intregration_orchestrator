@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 import base64
+from streamlit_autorefresh import st_autorefresh
+from datetime import datetime
 
 # Function to generate authentication token
 def generate_auth_token(username, password):
@@ -40,8 +42,23 @@ def main():
         if token:
             st.success("Authentication successful!")
             st.write(f"Your token: {token}")
-            # Store the token in Streamlit secrets
-            st.secrets["auth_token"] = token
+            # Store the token and other details in Streamlit session state
+            st.session_state.auth_token = token
+            st.session_state.username = username
+            st.session_state.password = password
+            st.session_state.last_refreshed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Auto-refresh every 15 minutes (900 seconds)
+    if "auth_token" in st.session_state:
+        st_autorefresh(interval=900 * 1000, key="auth_refresh")
+        token = generate_auth_token(st.session_state.username, st.session_state.password)
+        if token:
+            st.session_state.auth_token = token
+            st.session_state.last_refreshed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        st.write(f"Logged in as: {st.session_state.username}")
+        st.write(f"Password: {st.session_state.password}")
+        st.write(f"Auth token last refreshed: {st.session_state.last_refreshed}")
 
 if __name__ == "__main__":
     main()
