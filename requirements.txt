@@ -3,3 +3,4 @@ requests
 streamlit-option-menu
 base64
 streamlit_autorefresh
+streamlit_option_menu
