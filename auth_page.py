@@ -1,22 +1,31 @@
 import streamlit as st
 import requests
-import json
+import base64
 
 # Function to generate authentication token
 def generate_auth_token(username, password):
-    url = "https://auth.anaplan.com/token/authenticate"
-    headers = {
-        "Content-Type": "application/json"
+    # Encode the username and password
+    user_pw = base64.b64encode(f'{username}:{password}'.encode('utf-8')).decode('utf-8')
+
+    # Set up the headers for the request
+    auth_headers = {
+        'Authorization': f'Basic {user_pw}',
+        'Content-Type': 'application/json'
     }
-    data = {
-        "username": username,
-        "password": password
-    }
-    response = requests.post(url, headers=headers, data=json.dumps(data))
-    if response.status_code == 200:
-        return response.json().get("tokenInfo", {}).get("tokenValue")
+
+    # URL for authentication
+    auth_url = 'https://us1a.app.anaplan.com/token/authenticate'
+
+    # Make the POST request
+    response = requests.post(auth_url, headers=auth_headers, verify=False)
+
+    # Check the response
+    if str(response.status_code).startswith('2'):
+        auth_json = response.json()
+        return auth_json['tokenInfo']['tokenValue']
     else:
-        st.error("Failed to authenticate")
+        st.error(f"Failed to authenticate: {response.status_code}")
+        st.error(response.text)
         return None
 
 # Streamlit app
