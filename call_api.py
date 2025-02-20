@@ -63,8 +63,23 @@ def main():
         import_id = None
         export_id = None
 
+        if api_type == "Get Model IDs":
+            if st.button("Fetch Model IDs"):
+                models = call_anaplan_api(api_type)
+                if models:
+                    st.session_state.models = models
+                    st.write("Fetched Models:", models)
+
+        if "models" in st.session_state:
+            model_names = [model['name'] for model in st.session_state.models]
+            selected_model_name = st.selectbox("Select Model Name", model_names)
+            selected_model = next((model for model in st.session_state.models if model['name'] == selected_model_name), None)
+            if selected_model:
+                model_id = selected_model['id']
+
         if api_type in ["Get Process ID", "Get Action ID", "Get Import ID", "Get Export ID", "Get Export Metadata", "Get Import Metadata"]:
-            model_id = st.text_input("Enter Model ID")
+            if not model_id:
+                model_id = st.text_input("Enter Model ID")
 
         if api_type in ["Get Import Metadata"]:
             import_id = st.text_input("Enter Import ID")
@@ -75,7 +90,15 @@ def main():
         if st.button("Run API"):
             data = call_anaplan_api(api_type, model_id, import_id, export_id)
             if data:
-                st.write(f"API Data for {api_type}:", data)
+                st.session_state.api_data = data
+
+        if "api_data" in st.session_state:
+            search_query = st.text_input("Search API Data")
+            if search_query:
+                filtered_data = [item for item in st.session_state.api_data if search_query.lower() in str(item).lower()]
+                st.write(f"Filtered API Data for {api_type}:", filtered_data)
+            else:
+                st.write(f"API Data for {api_type}:", st.session_state.api_data)
     else:
         st.warning("Please authenticate first")
 
