@@ -1,5 +1,4 @@
 import streamlit as st
-from streamlit_option_menu import option_menu
 from auth_page import main as auth_page_main
 from call_api import main as call_api_main
 
@@ -12,14 +11,12 @@ st.set_page_config(
 )
 
 # Sidebar for navigation
-with st.sidebar:
-    selected = option_menu(
-        "Main Menu",
-        ["Home", "Authentication", "API Call"],
-        icons=["house", "key", "cloud"],
-        menu_icon="cast",
-        default_index=0,
-    )
+st.sidebar.title("Main Menu")
+selected = st.sidebar.radio(
+    "Go to",
+    ["Home", "Authentication", "API Call"],
+    index=0
+)
 
 # Main app logic
 if selected == "Home":
