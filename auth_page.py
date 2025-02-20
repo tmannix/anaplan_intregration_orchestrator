@@ -1,7 +1,9 @@
 import streamlit as st
 import requests
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
+import threading
+import time
 
 # Function to generate authentication token
 def generate_auth_token(username, password):
@@ -20,12 +22,25 @@ def generate_auth_token(username, password):
         st.error(response.text)
         return None
 
+# Function to refresh the authentication token in the background
+def refresh_token():
+    while True:
+        if "auth_token" in st.session_state:
+            token = generate_auth_token(st.session_state.username, st.session_state.password)
+            if token:
+                st.session_state.auth_token = token
+                st.session_state.last_refreshed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        time.sleep(900)  # Refresh every 15 minutes
+
 # Streamlit app
 def main():
     st.title("Authentication Page")
 
     username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    
+    # Password input with show/hide functionality
+    show_password = st.checkbox("Show Password")
+    password = st.text_input("Password", type="default" if show_password else "password")
 
     if st.button("Login"):
         token = generate_auth_token(username, password)
@@ -37,27 +52,18 @@ def main():
             st.session_state.password = password
             st.session_state.last_refreshed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    # JavaScript for auto-refresh
-    st.markdown(
-        """
-        <script>
-        function refreshPage() {
-            window.location.reload();
-        }
-        setInterval(refreshPage, 900000);  // Refresh every 15 minutes (900000 milliseconds)
-        </script>
-        """,
-        unsafe_allow_html=True
-    )
+            # Start the token refresh thread if not already running
+            if "refresh_thread" not in st.session_state:
+                st.session_state.refresh_thread = threading.Thread(target=refresh_token, daemon=True)
+                st.session_state.refresh_thread.start()
 
     if "auth_token" in st.session_state:
-        token = generate_auth_token(st.session_state.username, st.session_state.password)
-        if token:
-            st.session_state.auth_token = token
-            st.session_state.last_refreshed = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
         st.write(f"Logged in as: {st.session_state.username}")
-        st.write(f"Password: {st.session_state.password}")
+        
+        # Password display with show/hide functionality
+        show_password_bottom = st.checkbox("Show Password", key="show_password_bottom")
+        st.write(f"Password: {'*' * len(st.session_state.password) if not show_password_bottom else st.session_state.password}")
+        
         st.write(f"Auth token last refreshed: {st.session_state.last_refreshed}")
 
 if __name__ == "__main__":
