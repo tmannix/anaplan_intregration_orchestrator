@@ -16,7 +16,7 @@ st.set_page_config(
 st.sidebar.title("Anaplan Integration Helper")
 selected = st.sidebar.radio(
     "Go to",
-    ["Home", "Authentication", "On Demand API", "Scheduler", "Run Logs"],
+    ["Home", "Authentication", "Get Anaplan IDs", "Scheduler", "Run Logs"],
     index=0
 )
 
