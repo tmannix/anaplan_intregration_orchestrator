@@ -1,8 +1,10 @@
 import streamlit as st
 from auth_page import main as auth_page_main
-from get_anaplan_ids import main as  get_anaplan_id_main
+from get_anaplan_ids import main as get_anaplan_id_main
 from scheduler import main as scheduler_main
-from logs import main as logs_main
+from user_management import main as user_management_main
+from guide import main as guide_main
+from run_api import main as run_api_main
 
 # Set up page configuration
 st.set_page_config(
@@ -16,7 +18,7 @@ st.set_page_config(
 st.sidebar.title("Anaplan Integration Helper")
 selected = st.sidebar.radio(
     "Go to",
-    ["Home", "Authentication", "Get Anaplan IDs", "Scheduler", "Run Logs"],
+    ["Home", "Guide", "Authentication", "Get Anaplan IDs", "Run API", "Scheduler", "User Management"],
     index=0
 )
 
@@ -25,9 +27,8 @@ if selected == "Home":
     st.title("Streamline Your Anaplan Integration with Ease")
     st.subheader("Effortlessly manage APIs, schedule processes, and handle user management within your Anaplan Tenant.")
     
-    # Ensure the image path is correct
     try:
-        st.image("https://i.imgur.com/q97MwMQ.jpeg", use_container_width=True)  # Add a relevant image or screenshot
+        st.image("https://i.imgur.com/q97MwMQ.jpeg", use_container_width=True)
     except Exception as e:
         st.error(f"Error loading image: {e}")
     
@@ -45,12 +46,16 @@ if selected == "Home":
     ### Testimonials
     > "This app has transformed how we manage our Anaplan processes. It's a game-changer!"
     """)
-    
+
+elif selected == "Guide":
+    guide_main()
 elif selected == "Authentication":
     auth_page_main()
 elif selected == "Get Anaplan IDs":
-     get_anaplan_id_main()
+    get_anaplan_id_main()
+elif selected == "Run API":
+    run_api_main()
 elif selected == "Scheduler":
     scheduler_main()
-elif selected == "Run Logs":
-    logs_main()
+elif selected == "User Management":
+    user_management_main()

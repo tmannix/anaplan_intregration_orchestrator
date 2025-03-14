@@ -4,3 +4,5 @@ streamlit-option-menu
 base64
 streamlit-autorefresh
 streamlit_option_menu
+pyspark
+streamlit-aggrid
